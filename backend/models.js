@@ -25,8 +25,16 @@ const BarberSchema = new mongoose.Schema({
     isAvailable: { type: Boolean, default: true }
 });
 
+const HaircutSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    image: { type: String, required: true },
+    category: { type: String, default: 'Premium' }
+});
+
 module.exports = {
     User: mongoose.model('User', UserSchema),
     Booking: mongoose.model('Booking', BookingSchema),
-    Barber: mongoose.model('Barber', BarberSchema)
+    Barber: mongoose.model('Barber', BarberSchema),
+    Haircut: mongoose.model('Haircut', HaircutSchema)
 };

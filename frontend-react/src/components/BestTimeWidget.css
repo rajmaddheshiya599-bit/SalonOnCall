@@ -1,0 +1,74 @@
+.best-time-widget {
+  padding: 1.5rem 2rem !important;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.best-time-widget.loading {
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.widget-icon {
+  font-size: 2.5rem;
+}
+
+.widget-info {
+  flex: 1;
+}
+
+.widget-info h4 {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.prediction-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.time {
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.rush-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rush-tag.low {
+  background: rgba(0, 255, 127, 0.1);
+  color: #00ff7f;
+  border: 1px solid rgba(0, 255, 127, 0.3);
+}
+
+.est-wait {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.gold-button.small {
+  padding: 8px 16px !important;
+  font-size: 0.85rem !important;
+}
+
+@media (max-width: 600px) {
+  .best-time-widget {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+}

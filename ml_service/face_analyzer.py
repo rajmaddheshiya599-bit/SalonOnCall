@@ -72,6 +72,62 @@ class FaceAnalyzer:
             "recommendations": recommendations
         }, None
 
+    def analyze_face(self, image_bytes):
+        """
+        Comprehensive face analysis for the FastAPI endpoint.
+        Returns: (success, metrics, data, error)
+        """
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if image is None:
+            return False, None, None, "Invalid image format"
+
+        h, w, _ = image.shape
+        rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        
+        import time
+        start_time = time.time()
+        results = self.face_mesh.process(rgb_image)
+        latency = int((time.time() - start_time) * 1000)
+
+        if not results.multi_face_landmarks:
+            return False, {
+                "points_tracked": 0,
+                "processing_latency_ms": latency,
+                "face_confidence": "None"
+            }, None, "No face detected"
+
+        landmarks = results.multi_face_landmarks[0].landmark
+        
+        # Format landmarks
+        formatted_landmarks = [{"x": round(l.x, 4), "y": round(l.y, 4), "z": round(l.z, 4)} for l in landmarks]
+        
+        # Calculate bounding box
+        x_coords = [l.x for l in landmarks]
+        y_coords = [l.y for l in landmarks]
+        x_min, x_max = min(x_coords), max(x_coords)
+        y_min, y_max = min(y_coords), max(y_coords)
+        
+        bounding_box = {
+            "x_min": round(x_min, 4),
+            "y_min": round(y_min, 4),
+            "width": round(x_max - x_min, 4),
+            "height": round(y_max - y_min, 4)
+        }
+
+        metrics = {
+            "points_tracked": len(landmarks),
+            "processing_latency_ms": latency,
+            "face_confidence": "High" # MediaPipe Face Mesh doesn't provide a direct confidence score per detection in this mode, but success relative to threshold implies High
+        }
+
+        data = {
+            "landmarks": formatted_landmarks,
+            "bounding_box": bounding_box
+        }
+
+        return True, metrics, data, None
+
     def get_hairstyles(self, shape):
         styles = {
             "Oval": ["Fringes", "Long Waves", "Blunt Bob", "Tapered Cut"],

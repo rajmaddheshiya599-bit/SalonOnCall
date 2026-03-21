@@ -1,61 +1,74 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
-from face_analyzer import FaceAnalyzer
-from rush_predictor import RushPredictor
 import base64
-from datetime import datetime
+import time
+from face_analyzer import FaceAnalyzer
 
 app = Flask(__name__)
-CORS(app)
+
+# Production-ready CORS configuration
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 analyzer = FaceAnalyzer()
-predictor = RushPredictor()
 
-@app.route('/detect-face', methods=['POST'])
-def detect_face():
+@app.route('/api/analyze-face', methods=['POST'])
+def analyze_face_endpoint():
+    """
+    Production-ready endpoint for AI Face Analysis.
+    Expects JSON body: { "image": "base64_string" }
+    """
+    start_time = time.time()
     data = request.json
+    
     if not data or 'image' not in data:
-        return jsonify({"error": "No image data provided"}), 400
+        return jsonify({
+            "success": False, 
+            "error": "Missing 'image' key in request body",
+            "metrics": {"points_tracked": 0, "processing_latency_ms": 0, "face_confidence": "None"}
+        }), 400
     
-    # Image is expected as base64 string
     try:
-        image_data = base64.b64decode(data['image'].split(',')[1] if ',' in data['image'] else data['image'])
-        result, error = analyzer.classify_shape(image_data)
-        if error:
-            return jsonify({"error": error}), 400
-        return jsonify(result)
+        # Handle data:image/jpeg;base64,... prefix
+        encoded_data = data['image'].split(',')[1] if ',' in data['image'] else data['image']
+        image_bytes = base64.b64decode(encoded_data)
+        
+        # Process with optimized analyzer
+        success, metrics, result_data, error = analyzer.analyze_face(image_bytes)
+        
+        # Calculate full response latency
+        total_latency = int((time.time() - start_time) * 1000)
+        if metrics:
+            metrics['processing_latency_ms'] = total_latency
+
+        if not success:
+            return jsonify({
+                "success": False,
+                "error": error or "Face analysis failed",
+                "metrics": metrics or {"points_tracked": 0, "processing_latency_ms": total_latency, "face_confidence": "None"}
+            }), 200 # Return 200 for "valid" application error states if desired, or 400. 200 is safer for some frontends.
+
+        # Add shape and recommendations to the response as requested in the latest prompt
+        shape_info, _ = analyzer.classify_shape(image_bytes)
+        if shape_info:
+            result_data['shape_info'] = shape_info
+
+        return jsonify({
+            "success": True,
+            "metrics": metrics,
+            "data": result_data
+        })
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "success": False,
+            "error": f"Internal Server Error: {str(e)}",
+            "metrics": {"points_tracked": 0, "processing_latency_ms": int((time.time() - start_time) * 1000), "face_confidence": "None"}
+        }), 500
 
-@app.route('/predict-rush', methods=['POST'])
-def predict_rush():
-    data = request.json
-    # Expects day (0-6), hour (0-23), is_holiday (0/1)
-    day = data.get('day', datetime.now().weekday())
-    hour = data.get('hour', datetime.now().hour)
-    is_holiday = data.get('is_holiday', 0)
-    
-    prediction = predictor.predict(day, hour, is_holiday)
-    
-    # Map prediction to "Rush level"
-    level = "Low"
-    if prediction > 8: level = "Very High"
-    elif prediction > 5: level = "High"
-    elif prediction > 3: level = "Moderate"
-    
-    return jsonify({
-        "predicted_count": prediction,
-        "rush_level": level,
-        "best_time_to_visit": "High" if level == "Low" else "Normal" # badge logic
-    })
-
-@app.route('/train', methods=['GET'])
-def train_model():
-    msg = predictor.train()
-    return jsonify({"message": msg})
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy", "service": "AI Face Analysis"}), 200
 
 if __name__ == '__main__':
-    # Initial training
-    predictor.train()
-    app.run(host='0.0.0.0', port=5000)
+    # Use gunicorn or similar for real production, but for local/Render uvicorn/flask is fine.
+    app.run(host='0.0.0.0', port=5000, threaded=True)

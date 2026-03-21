@@ -1,0 +1,47 @@
+.navbar {
+  position: sticky;
+  top: 1rem;
+  margin: 1rem 2rem;
+  padding: 0.75rem 2rem;
+  z-index: 1000;
+  border-radius: 50px !important;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-logo {
+  font-size: 1.5rem;
+  font-family: 'Outfit', sans-serif;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.nav-link:hover {
+  color: var(--gold-secondary);
+}
+
+.gold-outline-button {
+  padding: 8px 18px !important;
+  font-size: 0.9rem !important;
+}
+
+.gold-button {
+  padding: 8px 20px !important;
+  font-size: 0.9rem !important;
+}

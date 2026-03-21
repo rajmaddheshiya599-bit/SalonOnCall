@@ -1,8 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+mediapipe
+opencv-python
+numpy
 flask
 flask-cors
-mediapipe
-scikit-learn
 pandas
-numpy
-opencv-python-headless
+scikit-learn
 axios

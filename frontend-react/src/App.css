@@ -1,0 +1,22 @@
+.app-main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-placeholder {
+  max-width: 800px;
+  margin: 4rem auto;
+  padding: 6rem;
+  text-align: center;
+}
+
+.page-placeholder h1 {
+  font-size: 3rem;
+}

@@ -67,4 +67,42 @@ app.get('/api/barbers', async (req, res) => {
     res.json(barbers);
 });
 
+app.get('/api/haircuts', async (req, res) => {
+    const staticHaircuts = [
+        {
+            name: "Fade Cut",
+            price: 200,
+            image: "https://images.unsplash.com/photo-1621605815841-aa8ae6504a9d?q=80&w=2070&auto=format&fit=crop",
+            category: "Premium"
+        },
+        {
+            name: "Executive Taper",
+            price: 850,
+            image: "https://images.unsplash.com/photo-1599351431247-f577f5d48102?q=80&w=1887&auto=format&fit=crop",
+            category: "Premium"
+        },
+        {
+            name: "Classic Pompadour",
+            price: 1200,
+            image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop",
+            category: "Premium"
+        }
+    ];
+
+    try {
+        const { category } = req.query;
+        const filter = category ? { category } : {};
+        const { Haircut } = require('./models');
+        let haircuts = await Haircut.find(filter);
+        
+        if (haircuts.length === 0) {
+            haircuts = staticHaircuts;
+        }
+        res.json(haircuts);
+    } catch (err) {
+        console.error("API Error:", err.message);
+        res.json(staticHaircuts);
+    }
+});
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
